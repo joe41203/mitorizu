@@ -1,0 +1,334 @@
+---
+name: api-design
+description: API のパス・レスポンス・各フィールドの用途を表形式で設計する。画面で使わないフィールドを返さない。画面の表示項目とテーブルのカラムを突き合わせ、過不足を検出する。
+disable-model-invocation: true
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Task, Bash
+---
+
+# API 設計
+
+OpenAPI 3.1 のエンドポイント定義を作る。
+
+**このスキルの中核は「レスポンスの過不足を機械的に検出すること」。**
+
+```
+screens.md の表示項目  =  API レスポンスのフィールド  ⊆  テーブルのカラム + 導出値
+```
+
+不足があれば画面が描画できない。過剰があれば不要なクエリ・情報漏洩・
+「誰も使っていないが消せないフィールド」を生む。**両方を禁じる。**
+
+**共通規約 `references/conventions.md` を必ず先に読むこと。**
+
+## 前提
+
+以下が存在すること。無ければ先に実行するよう案内する。
+
+- `requirements.md` — `/mitorizu:requirements`
+- `screens.md` — `/mitorizu:screens`
+- `data-model.md` — `/mitorizu:data-model`
+
+**3つ揃っていないと過不足の検証ができない。** 順序を飛ばさせない。
+
+## 成果物
+
+```
+docs/mitorizu/features/<feature-slug>/
+  api.md             # エンドポイント一覧・レスポンス定義・用途 (主成果物)
+  traceability.md    # 画面 -> API -> テーブル の追跡表
+```
+
+**主成果物は `api.md` の表。**
+「どんなパスで、何を返し、何に使われるか」が一覧できることを最優先にする。
+
+OpenAPI の YAML は既定では生成しない。
+階層が深く、フィールドの用途が埋もれて一覧できないため、
+設計を確認する用途には向かない。
+
+ユーザーが明示的に希望した場合のみ `openapi.yaml` を追加で生成する
+(コード生成やモックサーバに使う場合など)。
+その場合も `api.md` が正であり、YAML はそこから機械的に導出する。
+
+## 設計方針
+
+### リソース駆動を基本とする
+
+エンドポイントはリソース単位で設計する (REST)。
+ただし**画面表示に必要な関連データは既定でレスポンスに埋め込む**。
+
+```
+GET /api/v1/orders        一覧。顧客名など画面に必要な関連は埋め込む
+GET /api/v1/orders/{id}   詳細
+POST /api/v1/orders       作成
+PATCH /api/v1/orders/{id} 更新
+```
+
+**画面単位のエンドポイント (BFF) は既定にしない。**
+画面が変わるたびに API が変わり、再利用できなくなるため。
+
+ただし以下の場合は画面駆動を検討してよい。ユーザーに確認する。
+
+- 1画面で3つ以上のリソースを同時に必要とする
+- モバイルアプリで通信回数を厳しく制限したい
+- 画面とAPIが1対1で対応し、他から再利用されないことが確実
+
+### N+1 を設計で防ぐ
+
+一覧で関連データが必要な場合、**クライアントに追加リクエストさせない**。
+
+```
+悪い: GET /orders で id だけ返し、顧客名は GET /users/{id} を N 回
+良い: GET /orders のレスポンスに customer.name を埋め込む
+```
+
+これが「画面表示に必要な関連データは既定で埋め込む」の意味。
+
+## 進め方
+
+### Phase 1: エンドポイントの洗い出し
+
+`screens.md` の「操作」表から必要なエンドポイントを導出する。
+
+| 画面の操作 | 必要な API |
+| --- | --- |
+| 一覧を表示する | `GET /orders` |
+| 詳細を見る | `GET /orders/{id}` |
+| 新規作成する | `POST /orders` |
+| キャンセルする | `POST /orders/{id}/cancel` |
+
+**状態を変える操作は、リソースの更新か、専用のアクションかを判断する。**
+
+- 単純な属性更新 -> `PATCH /orders/{id}`
+- 業務上の意味を持つ状態遷移 -> `POST /orders/{id}/cancel`
+
+後者を推奨する。`PATCH` で `status` を直接書き換えさせると、
+不正な状態遷移を防げなくなる。
+
+エンドポイント一覧をユーザーに提示して確認を取る。
+
+### Phase 2: レスポンス設計 (最重要)
+
+**各フィールドに用途と出所を記録する。**
+
+| 列 | 内容 | 必須 |
+| --- | --- | --- |
+| フィールド | JSON のキー (パス表記) | 必須 |
+| 型 | OpenAPI の型 | 必須 |
+| **用途** | **どこで何に使うか** | **必須** |
+| **出所** | **テーブルのカラムまたは導出** | **必須** |
+
+#### 用途の書き方
+
+**画面ID を必ず含める。** どこで使われるか特定できない用途は無効。
+
+```
+| id | string | SCR-002 詳細画面への遷移、キャンセルAPIのキー | orders.id |
+| number | string | SCR-002 一覧の注文番号列に表示 | orders.number |
+| status | string | SCR-002 ステータスバッジの表示 | orders.status |
+| cancellable | boolean | SCR-002 キャンセルボタンの出し分け | orders.status から導出 |
+| customer.name | string | SCR-002 顧客名列に表示 | users.name (関連) |
+```
+
+#### 認める用途と認めない用途
+
+「利用しないアトリビュートは返さない」が原則。
+ただし画面に文字として出ないものでも、以下は正当な用途として認める。
+
+| 種類 | 例 | 用途の書き方 |
+| --- | --- | --- |
+| 後続 API のキー | `id` | SCR-002 詳細への遷移、削除APIのキー |
+| クライアント側の分岐 | `editable` | SCR-003 編集ボタンの出し分け |
+| キャッシュ制御 | `updated_at` | 条件付きリクエストの ETag 生成 |
+| ページネーション | `next_cursor` | SCR-002 次ページ取得 |
+
+**認めないもの:**
+
+- 「将来使うかもしれない」
+- 「あると便利」
+- 「他の API が返しているから」
+- 画面IDを特定できない用途
+
+**用途が書けないフィールドは削除する。**
+
+### Phase 3: 3方向の突き合わせ (このスキルの核心)
+
+`traceability.md` を作り、以下を機械的に検証する。
+
+#### 検証1: 不足の検出
+
+`screens.md` の表示項目のうち、**どの API レスポンスにも含まれないもの**を探す。
+
+```markdown
+| 画面 | 表示項目 | 対応する API フィールド | 判定 |
+| --- | --- | --- | --- |
+| SCR-002 | 注文番号 | GET /orders -> items[].number | OK |
+| SCR-002 | 顧客名 | GET /orders -> items[].customer.name | OK |
+| SCR-002 | 合計金額 | **該当なし** | **不足** |
+```
+
+不足があれば、レスポンスにフィールドを追加する。
+
+#### 検証2: 過剰の検出
+
+API レスポンスのフィールドのうち、**どの画面でも使われないもの**を探す。
+
+```markdown
+| API | フィールド | 用途 | 判定 |
+| --- | --- | --- | --- |
+| GET /orders | items[].number | SCR-002 表示 | OK |
+| GET /orders | items[].internal_memo | **用途なし** | **過剰: 削除** |
+```
+
+過剰が見つかったら、**削除するか、画面設計に追記するか**をユーザーに確認する。
+
+```
+GET /orders のレスポンスに internal_memo が含まれていますが、
+どの画面でも使われていません。
+
+A: フィールドを削除する (推奨)
+B: 画面設計に用途を追記する (どの画面で何に使うか)
+```
+
+#### 検証3: 出所の確認
+
+API レスポンスの各フィールドが、**テーブルのカラムまたは導出値**であることを確認する。
+
+```markdown
+| フィールド | 出所 | data-model.md に存在するか | 判定 |
+| --- | --- | --- | --- |
+| number | orders.number | あり | OK |
+| cancellable | orders.status から導出 | 導出元あり | OK |
+| shipping_eta | **不明** | **なし** | **要対応** |
+```
+
+出所が無いフィールドは、データモデルに追加するか、フィールドを削除する。
+
+### Phase 4: リクエスト設計
+
+`screens.md` の「入力項目」から導出する。
+
+| 列 | 内容 |
+| --- | --- |
+| フィールド | JSON のキー |
+| 型 | OpenAPI の型 |
+| 必須 | 必須 / 任意 |
+| 制約 | バリデーション |
+| 対応する画面項目 | SCR-NNN の入力項目 |
+
+**画面に無い入力項目を作らない。** 画面から送れない値は受け取れない。
+
+### Phase 5: エラー設計
+
+エラーレスポンスの形式を統一する。
+
+```yaml
+components:
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: 機械可読なエラーコード
+        message:
+          type: string
+          description: 利用者向けメッセージ
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+```
+
+**エラーコードは要件定義書の異常系 (EARS の Unwanted パターン) と対応させる。**
+
+| HTTP | code | 対応する要件 |
+| --- | --- | --- |
+| 400 | `VALIDATION_FAILED` | REQ-012 |
+| 403 | `FORBIDDEN` | REQ-015 |
+| 404 | `NOT_FOUND` | - |
+| 409 | `INVALID_STATE_TRANSITION` | REQ-008 |
+| 422 | `OUT_OF_STOCK` | REQ-010 |
+
+### Phase 6: api.md の出力
+
+`references/api-template.md` に従って `api.md` を書く。
+
+**表形式で一覧できることを最優先にする。**
+読み手が知りたいのは「どんなパスで、何を返し、何に使われるか」であり、
+それが1つの表で分かる状態にする。
+
+エンドポイントごとに以下を書く。
+
+1. パスとメソッド、対応する画面・要件
+2. リクエスト (パラメータ・ボディ)
+3. **レスポンスのフィールド表** — フィールド / 型 / 用途 / 出所
+4. レスポンス例 (JSON)
+5. エラー
+
+#### OpenAPI YAML が必要な場合
+
+ユーザーが明示的に希望した場合のみ生成する。
+コード生成・モックサーバ・スキーマ検証に使う場合など。
+
+生成したら構文を検証する (どちらも実測で動作確認済み)。
+
+```bash
+# Python
+python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1])); print('YAML OK')" \
+  docs/mitorizu/features/<slug>/openapi.yaml
+
+# Ruby
+ruby -ryaml -e 'YAML.load_file(ARGV[0]); puts "YAML OK"' \
+  docs/mitorizu/features/<slug>/openapi.yaml
+```
+
+### Phase 7: 確認と次のステップ
+
+1. **`traceability.md` の不足・過剰が0件であることを確認する**
+2. `[要確認]` を一覧で再掲する
+3. `docs/mitorizu/decisions.md` に確定事項を追記する
+
+```
+次のステップ:
+- /mitorizu:infra-diagram  インフラ構成図 (D2)
+- /mitorizu:non-functional 非機能要件
+```
+
+## 設計判断の基準
+
+### ページネーション
+
+| 方式 | 適する場合 |
+| --- | --- |
+| offset (`page`, `per`) | 総件数を表示する / ページ番号で飛びたい |
+| cursor (`after`, `limit`) | 件数が多い / リアルタイムに増減する |
+
+**MVP では offset を推奨。** 実装が単純で、総件数を表示できる。
+数万件を超える見込みなら cursor を検討する。
+
+### 日時の形式
+
+ISO 8601 (RFC 3339) の UTC で返す。`2026-08-14T12:34:56Z`
+表示形式への変換はクライアントの責務。
+
+### 命名
+
+- パス: ケバブケースの複数形 — `/order-items`
+- JSON のキー: **スネークケース** — `total_amount`
+
+Rails の慣習に合わせる。camelCase にすると変換層が必要になる。
+
+### バージョニング
+
+パスに含める — `/api/v1/orders`
+MVP では v1 のみ。破壊的変更が必要になったら v2 を追加する。
+
+## 参照
+
+- `references/conventions.md` — 信頼性マーカー、対話規約
+- `references/api-template.md` — API 設計書のテンプレート (主成果物)
+- `references/traceability-template.md` — 追跡表のテンプレート
