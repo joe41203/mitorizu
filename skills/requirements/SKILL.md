@@ -226,7 +226,14 @@ flowchart TD
 | 9. 用語集 | 新出用語を追記 |
 
 **該当節のみを更新し、他の節には触れない。**
-README が存在しない場合は `/mitorizu:docs-index` で作成するよう案内する。
+
+初回実行では README は存在しない。その場合は**新規作成する**。
+`${CLAUDE_PLUGIN_ROOT}/skills/docs-index/references/docs-readme-template.md`
+の見出し構造をそのまま作り、上記の担当節だけを埋める。
+他の節は見出しと「(未作成)」だけを置き、後続スキルに任せる。
+
+同様に `glossary.md` `decisions.md` も不在なら新規作成する。
+README が存在しない場合は**新規作成する** (共通規約の「ファイルが存在しない場合は新規作成する」を参照)。テンプレートの見出し構造を作り、担当節のみ埋める。
 
 ### Phase 6: 次のステップの案内
 
