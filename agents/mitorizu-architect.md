@@ -293,11 +293,20 @@ Skill(skill="mitorizu:requirements")
 
 | 次のフェーズ | 前提となる成果物 |
 | --- | --- |
+| business-flow | `features.md` |
+| **requirements** | **`business-flow.md`** (無ければヒアリングから。ただし業務の合意が取れない) |
 | screens | `requirements.md` |
+| state-machine | `requirements.md` (状態が3つ以上あれば) |
 | data-model | `requirements.md` + `screens.md` |
 | api-design | 上記 + `data-model.md` |
+| sequence | `api.md` |
+| tasks | `traceability.md` が0件 |
 | docs-index | 各機能の成果物 |
 | validate | 検証対象が1つ以上 |
+
+**前提のファイルを読んだことを、次のスキルに明示的に伝える。**
+子は親の会話履歴を見られないため、「business-flow.md を読んでから
+要件を書くこと」とプロンプトに書く。
 
 **前提が揃っていなければ、そのフェーズを先に実行する。**
 飛ばして進めると、後で必ず手戻りになる。
