@@ -119,11 +119,12 @@ ls docs/mitorizu/features/
 ```bash
 # 用途・参照元の空欄を検出
 # 行末が「| |」または「| (空欄) |」のもの。空文字列のセルも拾う
-grep -nE '\|\s*(\(空欄\))?\s*\|\s*$' docs/mitorizu/features/*/data-model.md
+grep -HnE '\|\s*(\(空欄\))?\s*\|\s*$' docs/mitorizu/features/*/data-model.md
 
 # 信頼性マーカーが無い、または不正な要件を検出
-# 行頭アンカーを付けない ([確実] が先頭に来るため)
-grep -nE '\*\*REQ-[0-9]+' docs/mitorizu/features/*/requirements.md \
+# -H が必須。glob が1ファイルしかマッチしないとき grep はファイル名を出力せず、
+# フィルタの ^[^:]*:[0-9]+: が一致せずに全行が通過する (機能が1つだけの初回で必ず起きる)
+grep -HnE '\*\*REQ-[0-9]+' docs/mitorizu/features/*/requirements.md \
   | grep -vE '^[^:]*:[0-9]+:\[(確実|推測|要確認)\]'
 
 # mermaid の構文検証
@@ -183,11 +184,11 @@ comm -23 /tmp/br-defined /tmp/br-used
 
 ```bash
 # enum 相当のカラムを探す (値の一覧が必要なもの)
-grep -nE '\| *`?(status|state|kind|type|category|role|priority|visibility)' \
+grep -HnE '\| *`?(status|state|kind|type|category|role|priority|visibility)' \
   docs/mitorizu/features/*/data-model.md
 
 # 値の一覧があるか (見出しで探す)
-grep -nE '^#+ .*の値' docs/mitorizu/features/*/data-model.md
+grep -HnE '^#+ .*の値' docs/mitorizu/features/*/data-model.md
 ```
 
 **一覧が無いカラムを見つけたら報告する。**

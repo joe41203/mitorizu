@@ -506,7 +506,7 @@ grep -oE '\|[^|]*\|[^|]*\|[^|]*\|\s*([^|]+)\s*\|' docs/mitorizu/glossary.md
 
 ```bash
 # 例: 禁止別名が「品目」の場合
-grep -n '品目' docs/mitorizu/features/<slug>/*.md
+grep -Hn '品目' docs/mitorizu/features/<slug>/*.md
 ```
 
 見つかったら**その場で修正する。** 後回しにすると全ファイルに広がる。

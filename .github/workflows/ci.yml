@@ -72,6 +72,15 @@ jobs:
               grep -nE '`references/[a-z0-9-]+\.md`' "$f" | sed 's/^/    /' >&2
               fail=1
             fi
+
+            # grep -n を glob + パイプで使っていないか
+            # glob が1ファイルしかマッチしないとき grep はファイル名を出力しないため、
+            # ファイル名を前提としたフィルタが全行を通過させてしまう
+            if grep -qE 'grep -n[A-Za-z]* .*\*/' "$f"; then
+              echo "  ERROR: glob 付きの grep に -H がありません" >&2
+              grep -nE 'grep -n[A-Za-z]* .*\*/' "$f" | sed 's/^/    /' >&2
+              fail=1
+            fi
           done
           exit $fail
 
