@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate-plugin:
+    name: プラグインマニフェストの検証
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Claude Code をインストール
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: plugin validate --strict
+        run: claude plugin validate . --strict
+
+  validate-skills:
+    name: スキル定義の検証
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SKILL.md の frontmatter を検証
+        run: |
+          set -euo pipefail
+          fail=0
+          for f in skills/*/SKILL.md; do
+            echo "--- $f"
+
+            # frontmatter が存在するか
+            if ! head -1 "$f" | grep -q '^---$'; then
+              echo "  ERROR: frontmatter がありません" >&2
+              fail=1
+              continue
+            fi
+
+            # name と description が存在するか
+            fm=$(awk '/^---$/{c++; next} c==1' "$f")
+            for key in name description; do
+              if ! echo "$fm" | grep -q "^${key}:"; then
+                echo "  ERROR: ${key} がありません" >&2
+                fail=1
+              fi
+            done
+
+            # 本文が 500 行以内か (公式推奨)
+            lines=$(wc -l < "$f" | tr -d ' ')
+            if [ "$lines" -gt 500 ]; then
+              echo "  ERROR: ${lines}行 (推奨は500行以内。references/ に分割してください)" >&2
+              fail=1
+            else
+              echo "  OK (${lines}行)"
+            fi
+          done
+          exit $fail
+
+  validate-mermaid:
+    name: Mermaid ブロックの検証
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: mermaid-cli をインストール
+        run: npm install -g @mermaid-js/mermaid-cli
+
+      - name: Mermaid ブロックを検証
+        run: |
+          set -uo pipefail
+          fail=0
+          tmp=$(mktemp -d)
+
+          # Markdown 内の ```mermaid ブロックを抽出して mmdc に通す
+          while IFS= read -r f; do
+            n=0
+            in_block=0
+            buf=""
+            while IFS= read -r line; do
+              if [ "$in_block" -eq 1 ]; then
+                if [ "$line" = '```' ]; then
+                  in_block=0
+                  n=$((n + 1))
+                  printf '%s' "$buf" > "$tmp/block.mmd"
+                  if ! mmdc -i "$tmp/block.mmd" -o "$tmp/out.svg" >/dev/null 2>"$tmp/err"; then
+                    echo "FAIL $f :: block_$n" >&2
+                    sed 's/^/    /' "$tmp/err" >&2
+                    fail=1
+                  fi
+                  buf=""
+                else
+                  buf="${buf}${line}"$'\n'
+                fi
+              elif [ "$line" = '```mermaid' ]; then
+                in_block=1
+              fi
+            done < "$f"
+            [ "$n" -gt 0 ] && echo "OK   $f ($n ブロック)"
+          done < <(find . -name '*.md' -not -path './.git/*')
+
+          exit $fail
+
+  validate-d2:
+    name: D2 検証スクリプトの動作確認
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: d2 をインストール
+        run: curl -fsSL https://d2lang.com/install.sh | sh -s --
+
+      - name: verify-d2.sh が Mermaid 記法の混入を検出できるか
+        run: |
+          set -euo pipefail
+          chmod +x skills/infra-diagram/scripts/verify-d2.sh
+
+          # 正常系: 期待値と一致するので exit 0
+          printf 'a -> b\nq -> r: bad\n' > /tmp/ok.d2
+          skills/infra-diagram/scripts/verify-d2.sh /tmp/ok.d2 4 2
+          echo "正常系: OK"
+
+          # 異常系: Mermaid 記法を混入させると exit 1 になるはず
+          printf 'a -> b\nq -.|bad| r\n' > /tmp/trap.d2
+          if skills/infra-diagram/scripts/verify-d2.sh /tmp/trap.d2 4 2; then
+            echo "ERROR: Mermaid 記法の混入を検出できませんでした" >&2
+            exit 1
+          fi
+          echo "異常系: OK (期待どおり検出)"
