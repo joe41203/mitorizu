@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-5A67D8)](https://code.claude.com/docs/en/plugins)
 [![CI](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml/badge.svg)](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml)
-[![Skills](https://img.shields.io/badge/skills-6-blue)](#6つのスキル)
+[![Skills](https://img.shields.io/badge/skills-7-blue)](#7つのスキル)
 
 空リポジトリから MVP を作るまでの設計を、対話しながら進めます。<br>
 要件定義書・画面設計・ER図・テーブル定義・API設計・インフラ構成図を生成し、<br>
@@ -20,6 +20,7 @@
 見取図 (みとりず) は、細部の施工図ではなく **全体を大づかみに把握するための図** です。
 
 ```
+/mitorizu:init           →  実行環境を準備する (任意)
 /mitorizu:requirements   →  何を作るのかを対話で固める
 /mitorizu:screens        →  画面に何を表示するかを決める
 /mitorizu:data-model     →  テーブルとカラムを設計する
@@ -34,7 +35,7 @@
 - [何が違うか](#何が違うか)
 - [インストール](#インストール)
 - [使い方](#使い方)
-- [6つのスキル](#6つのスキル)
+- [7つのスキル](#7つのスキル)
 - [生成される成果物](#生成される成果物)
 - [設計上の選択](#設計上の選択)
 - [よくある質問](#よくある質問)
@@ -230,8 +231,23 @@ Q1. 注文のキャンセルは誰ができますか?
 
 **任意のものは未インストールでも動きます。**
 
-- d2 が無い場合: `.d2` ソースのみ生成。後から `brew install d2` で図にできます
+- d2 が無い場合: `.d2` ソースのみ生成。後から図にできます
 - mmdc が無い場合: 検証をスキップします (図の描画は GitHub 側で行われます)
+
+### d2 をプロジェクトローカルに導入する
+
+```
+/mitorizu:init
+```
+
+システムには何もインストールしません。`.mitorizu/bin/d2` に置き、`.gitignore` に追記します。
+
+- **確認を取ってからダウンロードします** — 取得元 URL・配置先・サイズを提示してから実行
+- 取得元は GitHub Releases の公式配布物のみ (`curl | sh` 形式のインストーラは使いません)
+- 取得後に SHA-256 を表示し、`d2 --version` で動作を確認します
+- アンインストールは `rm -rf .mitorizu` だけ
+
+`brew install d2` でシステムに入れる方法も選べます。どちらでも `infra-diagram` が自動で見つけます (ローカル優先)。
 
 ---
 
@@ -276,10 +292,11 @@ flowchart TD
 
 ---
 
-## 6つのスキル
+## 7つのスキル
 
 | スキル | 役割 | 主な成果物 |
 | --- | --- | --- |
+| **init** | 実行環境を準備する (d2 の導入) | `.mitorizu/bin/d2` |
 | **requirements** | 対話のラリーで要件を固める | `requirements.md` (EARS記法)<br>`interview.md`<br>`dataflow.md` |
 | **screens** | 画面の表示項目・操作・遷移を定義 | `screens.md` |
 | **data-model** | ER図とテーブル定義を作る | `data-model.md` (用途・参照元つき)<br>`entities.md` |

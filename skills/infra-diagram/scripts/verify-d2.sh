@@ -24,27 +24,34 @@ if [ ! -f "$SRC" ]; then
   exit 2
 fi
 
-if ! command -v d2 >/dev/null 2>&1; then
-  echo "d2 が未インストールのため SVG 生成をスキップしました。"
+# d2 を探す。プロジェクトローカルを優先する。
+# /mitorizu:init で導入した場合は .mitorizu/bin/ に置かれる。
+if [ -x ".mitorizu/bin/d2" ]; then
+  D2=".mitorizu/bin/d2"
+elif command -v d2 >/dev/null 2>&1; then
+  D2="d2"
+else
+  echo "d2 が見つからないため SVG 生成をスキップしました。"
   echo "  .d2 ソースはそのまま利用できます。図が必要になったら:"
-  echo "    brew install d2"
-  echo "    d2 $SRC ${SRC%.d2}.svg"
+  echo "    /mitorizu:init          プロジェクトローカルに導入する (推奨)"
+  echo "    brew install d2         システムに導入する"
+  echo "  導入後: d2 $SRC ${SRC%.d2}.svg"
   exit 0
 fi
 
 OUT="${SRC%.d2}.svg"
 
 # 1. 構文検証
-if ! d2 validate "$SRC"; then
+if ! "$D2" validate "$SRC"; then
   echo "FAIL: 構文エラー" >&2
   exit 1
 fi
 
 # 2. 整形 (差分ノイズを減らす)
-d2 fmt "$SRC" >/dev/null 2>&1 || true
+"$D2" fmt "$SRC" >/dev/null 2>&1 || true
 
 # 3. SVG 生成
-if ! d2 "$SRC" "$OUT" >/dev/null 2>&1; then
+if ! "$D2" "$SRC" "$OUT" >/dev/null 2>&1; then
   echo "FAIL: レンダリングに失敗しました" >&2
   exit 1
 fi
