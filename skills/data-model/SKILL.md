@@ -13,7 +13,7 @@ ER図・テーブル定義・DDL を作る。
 型と制約だけを並べた定義書は、スキーマの写しでしかない。
 そのカラムが何のために存在し、どの画面・API で読み書きされるかまで書く。
 
-**共通規約 `references/conventions.md` を必ず先に読むこと。**
+**共通規約 `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` を必ず先に読むこと。**
 特に第7節の命名規約 (Rails way) に従う。
 
 ## 前提
@@ -171,7 +171,7 @@ erDiagram
 書いたら検証する。
 
 ```bash
-~/.claude/check-mermaid.sh docs/mitorizu/features/<slug>/data-model.md
+"${CLAUDE_PLUGIN_ROOT}/scripts/check-mermaid.sh" docs/mitorizu/features/<slug>/data-model.md
 ```
 
 ### Phase 5: インデックス設計
@@ -276,5 +276,5 @@ discard gem を使うと `Order.kept` で絞り込める。
 
 ## 参照
 
-- `references/conventions.md` — 命名規約 (Rails way)、信頼性マーカー
-- `references/data-model-template.md` — テーブル定義書のテンプレート
+- `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` — 命名規約 (Rails way)、信頼性マーカー
+- `${CLAUDE_SKILL_DIR}/references/data-model-template.md` — テーブル定義書のテンプレート

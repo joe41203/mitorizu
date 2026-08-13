@@ -18,7 +18,7 @@ screens.md の表示項目  =  API レスポンスのフィールド  ⊆  テ�
 不足があれば画面が描画できない。過剰があれば不要なクエリ・情報漏洩・
 「誰も使っていないが消せないフィールド」を生む。**両方を禁じる。**
 
-**共通規約 `references/conventions.md` を必ず先に読むこと。**
+**共通規約 `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` を必ず先に読むこと。**
 
 ## 前提
 
@@ -255,7 +255,7 @@ components:
 
 ### Phase 6: api.md の出力
 
-`references/api-template.md` に従って `api.md` を書く。
+`${CLAUDE_SKILL_DIR}/references/api-template.md` に従って `api.md` を書く。
 
 **表形式で一覧できることを最優先にする。**
 読み手が知りたいのは「どんなパスで、何を返し、何に使われるか」であり、
@@ -335,6 +335,6 @@ MVP では v1 のみ。破壊的変更が必要になったら v2 を追加す�
 
 ## 参照
 
-- `references/conventions.md` — 信頼性マーカー、対話規約
-- `references/api-template.md` — API 設計書のテンプレート (主成果物)
-- `references/traceability-template.md` — 追跡表のテンプレート
+- `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` — 信頼性マーカー、対話規約
+- `${CLAUDE_SKILL_DIR}/references/api-template.md` — API 設計書のテンプレート (主成果物)
+- `${CLAUDE_SKILL_DIR}/references/traceability-template.md` — 追跡表のテンプレート

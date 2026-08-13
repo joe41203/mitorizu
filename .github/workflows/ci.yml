@@ -55,6 +55,23 @@ jobs:
             else
               echo "  OK (${lines}行)"
             fi
+
+            # 開発マシン固有のパスに依存していないか
+            # 外部利用者の環境には ~/.claude/ の自作スクリプトは存在しない
+            if grep -q '~/\.claude/' "$f"; then
+              echo "  ERROR: ~/.claude/ への依存があります (同梱スクリプトを使ってください)" >&2
+              grep -n '~/\.claude/' "$f" | sed 's/^/    /' >&2
+              fail=1
+            fi
+
+            # 裸の相対パス参照が残っていないか
+            # 実行時の cwd は利用者のプロジェクトなので、
+            # プラグイン内のファイルは ${CLAUDE_PLUGIN_ROOT} / ${CLAUDE_SKILL_DIR} で参照する
+            if grep -qE '`references/[a-z0-9-]+\.md`' "$f"; then
+              echo "  ERROR: 裸の references/ 参照があります" >&2
+              grep -nE '`references/[a-z0-9-]+\.md`' "$f" | sed 's/^/    /' >&2
+              fail=1
+            fi
           done
           exit $fail
 

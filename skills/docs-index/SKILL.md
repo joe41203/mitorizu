@@ -13,7 +13,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 各成果物の要約を含み、**この1枚を読めば全体像が分かる**文書にする。
 詳細を知りたくなったときに各ファイルへ飛べる、という構造。
 
-**共通規約 `references/conventions.md` を必ず先に読むこと。**
+**共通規約 `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` を必ず先に読むこと。**
 
 ## いつ使うか
 
@@ -61,7 +61,7 @@ find docs/mitorizu -name '*.md' -o -name '*.yaml' -o -name '*.d2' | sort
 
 ### Phase 2: README を生成する
 
-`references/docs-readme-template.md` の構造に従う。
+`${CLAUDE_SKILL_DIR}/references/docs-readme-template.md` の構造に従う。
 
 **要約の書き方が重要。**
 
@@ -133,7 +133,7 @@ README には図を直接埋め込む。リンクだけにしない。
 mermaid を書いたら検証する。
 
 ```bash
-~/.claude/check-mermaid.sh docs/mitorizu/README.md
+"${CLAUDE_PLUGIN_ROOT}/scripts/check-mermaid.sh" docs/mitorizu/README.md
 ```
 
 ### Phase 5: 更新モードの場合
@@ -167,5 +167,5 @@ README が既に存在する場合、**該当する節だけを更新する。**
 
 ## 参照
 
-- `references/conventions.md` — 出力先、信頼性マーカー
-- `references/docs-readme-template.md` — README の構造テンプレート
+- `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` — 出力先、信頼性マーカー
+- `${CLAUDE_SKILL_DIR}/references/docs-readme-template.md` — README の構造テンプレート

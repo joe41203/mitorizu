@@ -151,8 +151,12 @@ q -.|bad| r     # Mermaid の点線記法。D2 では無効
 | --- | --- | --- |
 | Claude Code | 必須 | プラグインの実行 |
 | [d2](https://d2lang.com) | 任意 | インフラ図の SVG 生成 |
+| [mermaid-cli](https://github.com/mermaid-js/mermaid-cli) | 任意 | mermaid ブロックの構文検証 |
 
-d2 が無くても `.d2` ソースは生成されます。後から `brew install d2` で図にできます。
+**どちらも任意です。** 未インストールでも設計ドキュメントは生成されます。
+
+- d2 が無い場合: `.d2` ソースのみ生成。後から `brew install d2` で図にできます
+- mmdc が無い場合: mermaid の検証をスキップします (図の生成自体は GitHub 側で行われます)
 
 ## 参考にしたもの
 

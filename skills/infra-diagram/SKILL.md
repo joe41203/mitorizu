@@ -13,7 +13,7 @@ D2 でインフラ構成図を作る。
 mermaid にはクラウドベンダーのサービスアイコンがなく、
 VPC -> AZ -> Subnet の入れ子も3段以上で破綻するため。
 
-**書き方と落とし穴は `references/d2-guide.md` を必ず読むこと。**
+**書き方と落とし穴は `${CLAUDE_PLUGIN_ROOT}/references/d2-guide.md` を必ず読むこと。**
 特に「D2 は Mermaid 記法を黙って受理する」という罠は必ず把握しておく。
 
 ## 前提
@@ -84,7 +84,7 @@ vpc: VPC {          <- これも1個
 
 ### Phase 3: D2 を書く
 
-`references/d2-guide.md` の構文に従う。
+`${CLAUDE_PLUGIN_ROOT}/references/d2-guide.md` の構文に従う。
 
 **Mermaid 記法を混ぜない。** 特に間違えやすいもの:
 
@@ -220,6 +220,6 @@ MVP では以下を1枚に収める。分けすぎない。
 
 ## 参照
 
-- `references/d2-guide.md` — D2 の構文、落とし穴、運用ルール
-- `scripts/verify-d2.sh` — 検証スクリプト
-- `references/conventions.md` — 信頼性マーカー、対話規約
+- `${CLAUDE_PLUGIN_ROOT}/references/d2-guide.md` — D2 の構文、落とし穴、運用ルール
+- `${CLAUDE_SKILL_DIR}/scripts/verify-d2.sh` — 検証スクリプト
+- `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` — 信頼性マーカー、対話規約

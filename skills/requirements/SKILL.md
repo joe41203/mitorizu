@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Task, Bash
 
 対話のラリーを通じて要件を固め、EARS 記法の要件定義書とデータフロー図を生成する。
 
-**共通規約 `references/conventions.md` を必ず先に読むこと。**
+**共通規約 `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` を必ず先に読むこと。**
 信頼性マーカー、EARS 記法、出力先、対話の進め方はそこで定義されている。
 
 ## このスキルの成果物
@@ -146,7 +146,7 @@ MVP で後回しにしやすい典型:
 
 ### Phase 2: 要件定義書の生成
 
-`references/requirements-template.md` のテンプレートに従う。
+`${CLAUDE_SKILL_DIR}/references/requirements-template.md` のテンプレートに従う。
 
 **必ず守ること**:
 
@@ -192,7 +192,7 @@ flowchart TD
 書いたら検証する:
 
 ```bash
-~/.claude/check-mermaid.sh docs/mitorizu/features/<slug>/dataflow.md
+"${CLAUDE_PLUGIN_ROOT}/scripts/check-mermaid.sh" docs/mitorizu/features/<slug>/dataflow.md
 ```
 
 エラーが出たら修正し、通るまで繰り返す。
@@ -265,6 +265,6 @@ REQ-005 (既存, 機能A): 「システムは削除された注文を物理削�
 
 ## 参照
 
-- `references/conventions.md` — 信頼性マーカー、EARS、出力先、対話規約
-- `references/requirements-template.md` — 要件定義書のテンプレート
-- `references/ears-examples.md` — EARS 記法の実例集
+- `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` — 信頼性マーカー、EARS、出力先、対話規約
+- `${CLAUDE_SKILL_DIR}/references/requirements-template.md` — 要件定義書のテンプレート
+- `${CLAUDE_SKILL_DIR}/references/ears-examples.md` — EARS 記法の実例集

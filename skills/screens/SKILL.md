@@ -13,7 +13,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Task, Bash
 ここで定義した表示項目が、API レスポンスの過不足を判定する唯一の基準になるため、
 「何を表示するか」を漏れなく、かつ余計なものを含めずに書くことが重要。
 
-**共通規約 `references/conventions.md` を必ず先に読むこと。**
+**共通規約 `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` を必ず先に読むこと。**
 
 ## 前提
 
@@ -144,7 +144,7 @@ stateDiagram-v2
 書いたら検証する。
 
 ```bash
-~/.claude/check-mermaid.sh docs/mitorizu/features/<slug>/screens.md
+"${CLAUDE_PLUGIN_ROOT}/scripts/check-mermaid.sh" docs/mitorizu/features/<slug>/screens.md
 ```
 
 ### Phase 5: 確認と次のステップ
@@ -219,5 +219,5 @@ API 設計時に「権限によってレスポンスを変える」実装が必�
 
 ## 参照
 
-- `references/conventions.md` — 信頼性マーカー、出力先、対話規約
-- `references/screens-template.md` — 画面設計書のテンプレート
+- `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` — 信頼性マーカー、出力先、対話規約
+- `${CLAUDE_SKILL_DIR}/references/screens-template.md` — 画面設計書のテンプレート
