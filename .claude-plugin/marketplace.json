@@ -1,0 +1,28 @@
+{
+  "name": "mitorizu",
+  "owner": {
+    "name": "joe41203",
+    "url": "https://github.com/joe41203"
+  },
+  "metadata": {
+    "description": "要件定義から設計成果物までを対話で組み立てる Claude Code プラグイン",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "mitorizu",
+      "source": "./",
+      "description": "対話のラリーで要件を固め、データフロー図・ER図・テーブル定義・API設計・インフラ構成図まで一貫して作る",
+      "version": "0.1.0",
+      "category": "development",
+      "keywords": [
+        "requirements",
+        "spec-driven-development",
+        "database-design",
+        "api-design",
+        "mermaid",
+        "d2"
+      ]
+    }
+  ]
+}

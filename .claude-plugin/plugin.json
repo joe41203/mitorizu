@@ -1,0 +1,20 @@
+{
+  "name": "mitorizu",
+  "description": "対話のラリーで要件を固め、データフロー図・ER図・テーブル定義・API設計・インフラ構成図まで一貫して作る要件定義プラグイン",
+  "version": "0.1.0",
+  "author": {
+    "name": "joe41203",
+    "url": "https://github.com/joe41203"
+  },
+  "homepage": "https://github.com/joe41203/mitorizu",
+  "repository": "https://github.com/joe41203/mitorizu",
+  "license": "MIT",
+  "keywords": [
+    "requirements",
+    "spec-driven-development",
+    "database-design",
+    "api-design",
+    "mermaid",
+    "d2"
+  ]
+}
