@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-5A67D8)](https://code.claude.com/docs/en/plugins)
 [![CI](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml/badge.svg)](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml)
-[![Skills](https://img.shields.io/badge/skills-11-blue)](#11のスキル)
+[![Skills](https://img.shields.io/badge/skills-14-blue)](#14のスキル)
 
 空リポジトリから MVP を作るまでの設計を、対話しながら進めます。<br>
 要件定義書・画面設計・ER図・テーブル定義・API設計・インフラ構成図を生成し、<br>
@@ -24,6 +24,8 @@
 /mitorizu:discovery      →  Web調査で課題と機能候補を洗い出す
 /mitorizu:features       →  機能を実装単位に分割する
 /mitorizu:requirements   →  何を作るのかを対話で固める
+/mitorizu:non-functional →  性能・可用性・セキュリティを決める
+/mitorizu:state-machine  →  状態遷移を設計する (必要な場合)
 /mitorizu:screens        →  画面に何を表示するかを決める
 /mitorizu:data-model     →  テーブルとカラムを設計する
 /mitorizu:api-design     →  API を設計し、整合性を検証する
@@ -31,6 +33,7 @@
 /mitorizu:docs-index     →  全部を1枚のドキュメントに束ねる
 /mitorizu:validate       →  整合性を再検証する
 /mitorizu:tasks          →  実装タスクに分解する
+/mitorizu:adr            →  後から変えられない決定を記録する
 ```
 
 ## 目次
@@ -39,7 +42,7 @@
 - [何が違うか](#何が違うか)
 - [インストール](#インストール)
 - [使い方](#使い方)
-- [11のスキル](#11のスキル)
+- [14のスキル](#14のスキル)
 - [生成される成果物](#生成される成果物)
 - [設計上の選択](#設計上の選択)
 - [よくある質問](#よくある質問)
@@ -314,7 +317,7 @@ flowchart TD
 
 ---
 
-## 11のスキル
+## 14のスキル
 
 | スキル | 役割 | 主な成果物 |
 | --- | --- | --- |
@@ -329,6 +332,9 @@ flowchart TD
 | **docs-index** | 全成果物を1枚に束ねる | `docs/mitorizu/README.md` |
 | **validate** | 整合性を横断的に検証する | (報告のみ・生成しない) |
 | **tasks** | 設計を実装タスクに分解する | `tasks.md` |
+| **non-functional** | 性能・可用性・セキュリティを決める | `non-functional.md` |
+| **state-machine** | 状態遷移を設計する | `state-machine.md` |
+| **adr** | 変えられない決定を記録する | `adr/ADR-NNN-*.md` |
 
 すべて `disable-model-invocation: true` を設定しており、**あなたが明示的に呼び出したときだけ起動します**。Claude が勝手に要件定義を始めることはありません。
 
