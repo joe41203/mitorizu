@@ -14,7 +14,7 @@ ER図・テーブル定義・DDL を作る。
 そのカラムが何のために存在し、どの画面・API で読み書きされるかまで書く。
 
 **共通規約 `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` を必ず先に読むこと。**
-特に第7節の命名規約 (Rails way) に従う。
+特に第8節の命名規約 (Rails way) に従う。
 
 ## 開始前に必ず読むもの
 
