@@ -67,6 +67,38 @@ erDiagram
 
 **参照元が空欄のカラムは作らない。** 例外は監査・外部キー・論理削除・楽観ロックのみ。
 
+#### enum 相当のカラムの値
+
+**取りうる値が決まっているカラムは、値を全て列挙する。**
+`status` だけでなく、`role` `category` `payment_method` なども対象。
+
+##### status の値
+
+| 値 | 表示名 | 意味 | 遷移先 | 要件ID |
+| --- | --- | --- | --- | --- |
+| `pending` | 受付済 | 注文を受け付けた。決済待ち | `paid`, `cancelled` | REQ-001 |
+| `paid` | 支払済 | 決済が完了した | `shipped`, `cancelled` | REQ-005 |
+| `shipped` | 発送済 | 発送した (終端) | - | REQ-010 |
+| `cancelled` | 取消済 | 取り消された (終端) | - | REQ-008 |
+
+**表示名を必ず書く。** 画面には `pending` ではなく「受付済」と出す。
+無いと画面実装時に毎回考えることになり、表記がぶれる。
+
+##### payment_method の値
+
+遷移が無い enum は、値・表示名・意味だけでよい。
+
+| 値 | 表示名 | 意味 | 要件ID |
+| --- | --- | --- | --- |
+| `credit_card` | クレジットカード | 決済代行を経由する | REQ-003 |
+| `bank_transfer` | 銀行振込 | 入金確認が必要 | REQ-004 |
+| `cash_on_delivery` | 代金引換 | 配送業者が回収する | REQ-004 |
+
+##### 値の追加余地
+
+[推測] 将来 `refunded` (返金済) が追加される可能性がある。
+       string 型のためマイグレーション無しで追加できる。
+
 #### インデックス
 
 | 名前 | 対象カラム | 種別 | 理由 |
@@ -74,14 +106,6 @@ erDiagram
 | `index_orders_on_user_id` | `user_id` | 通常 | 外部キー (Rails は自動で張らない) |
 | `index_orders_on_number` | `number` | 一意 | 注文番号での検索・重複防止 |
 | `index_orders_on_user_id_and_ordered_at` | `user_id`, `ordered_at` | 複合 | SCR-002 の絞り込み + ソート |
-
-#### 状態遷移 (status を持つ場合)
-
-| 値 | 意味 | 遷移先 | 要件ID |
-| --- | --- | --- | --- |
-| `pending` | 注文受付 | `paid`, `cancelled` | REQ-005 |
-| `paid` | 決済完了 | `shipped` | REQ-006 |
-| `cancelled` | 取消済 | (終端) | REQ-008 |
 
 ### order_items (注文明細)
 

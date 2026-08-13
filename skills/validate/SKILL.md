@@ -34,6 +34,7 @@ allowed-tools: Read, Glob, Grep, Bash, Task
 | A5 | 要件の追跡 | 全ての REQ-NNN が画面か API に対応しているか |
 | A6 | 画面の追跡 | 全ての SCR-NNN が要件に対応しているか |
 | A7 | **要件の実現可能性** | **要件が要求するデータがテーブルに存在するか** |
+| A8 | **enum の値** | **enum 相当のカラムに値の一覧があり、api.md と一致するか** |
 
 **A7 は traceability.md では検出できない。**
 traceability は「画面 - API - テーブル」の3方向を見るが、
@@ -136,6 +137,34 @@ grep -hoE '^### [a-z_]+' docs/mitorizu/features/*/data-model.md | sed 's/^### //
 `books` は正しく `lending` は誤りだが、正規表現では区別できない。
 一覧を出して目視で確認する。不規則複数形 (`people` `children`) もあるため
 機械判定を試みると誤検出が増える。
+
+#### enum の値の検証 (A8)
+
+**enum 相当のカラムに値の一覧があるか、api.md と一致するかを見る。**
+
+食い違うと実装で破綻する。よくあるのは以下。
+
+| 問題 | 例 |
+| --- | --- |
+| 値の一覧が無い | `status` があるが取りうる値が書かれていない |
+| 表示名が無い | `pending` は書いてあるが画面に何と出すか不明 |
+| data-model と api.md で不一致 | data-model に4値、api.md に3値 |
+| 命名がぶれる | `cancelled` と `canceled` が混在 |
+
+```bash
+# enum 相当のカラムを探す (値の一覧が必要なもの)
+grep -nE '\| *`?(status|state|kind|type|category|role|priority|visibility)' \
+  docs/mitorizu/features/*/data-model.md
+
+# 値の一覧があるか (見出しで探す)
+grep -nE '^#+ .*の値' docs/mitorizu/features/*/data-model.md
+```
+
+**一覧が無いカラムを見つけたら報告する。**
+`[用途空欄]` と同様、実装できない状態。
+
+data-model と api.md の両方に値の一覧がある場合、
+**値の集合が一致するかを目視で確認する。** 機械比較は表記ゆれで誤検出しやすい。
 
 ### Phase 3: 突き合わせを行う
 
