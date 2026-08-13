@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-5A67D8)](https://code.claude.com/docs/en/plugins)
 [![CI](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml/badge.svg)](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml)
-[![Skills](https://img.shields.io/badge/skills-16-blue)](#16のスキル)
+[![Skills](https://img.shields.io/badge/skills-17-blue)](#17のスキル)
 
 空リポジトリから MVP を作るまでの設計を、対話しながら進めます。<br>
 要件定義書・画面設計・ER図・テーブル定義・API設計・インフラ構成図を生成し、<br>
@@ -23,7 +23,8 @@
 /mitorizu:init           →  実行環境を準備する (任意)
 /mitorizu:discovery      →  Web調査で課題と機能候補を洗い出す
 /mitorizu:features       →  機能を実装単位に分割する
-/mitorizu:business-flow  →  誰が何をするとどうなるかを業務の言葉で描く
+/mitorizu:stakeholders   →  関係者と関心事を洗い出す
+/mitorizu:business-flow  →  現状と将来の業務を業務の言葉で描く
 /mitorizu:requirements   →  何を作るのかを対話で固める
 /mitorizu:non-functional →  性能・可用性・セキュリティを決める
 /mitorizu:state-machine  →  状態遷移を設計する (必要な場合)
@@ -44,7 +45,7 @@
 - [何が違うか](#何が違うか)
 - [インストール](#インストール)
 - [使い方](#使い方)
-- [16のスキル](#16のスキル)
+- [17のスキル](#17のスキル)
 - [生成される成果物](#生成される成果物)
 - [設計上の選択](#設計上の選択)
 - [よくある質問](#よくある質問)
@@ -319,14 +320,15 @@ flowchart TD
 
 ---
 
-## 16のスキル
+## 17のスキル
 
 | スキル | 役割 | 主な成果物 |
 | --- | --- | --- |
 | **init** | 実行環境を準備する (d2 の導入) | `.mitorizu/bin/d2` |
 | **discovery** | Web調査で課題と機能を洗い出す | `discovery/` 一式 |
 | **features** | 機能を実装単位に分割する | `features.md` |
-| **business-flow** | 業務の流れを非エンジニア向けに描く | `business-flow.md` |
+| **stakeholders** | 関係者と関心事を整理する | `stakeholders.md` |
+| **business-flow** | 現状(As-Is)と将来(To-Be)の業務を描く | `business-flow.md` |
 | **requirements** | 対話のラリーで要件を固める | `requirements.md` (EARS記法)<br>`interview.md`<br>`dataflow.md` |
 | **screens** | 画面の表示項目・操作・遷移を定義 | `screens.md` |
 | **data-model** | ER図とテーブル定義を作る | `data-model.md` (用途・参照元つき)<br>`entities.md` |
