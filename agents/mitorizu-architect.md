@@ -43,18 +43,37 @@ ${CLAUDE_PLUGIN_ROOT}/references/conventions.md
 ## 進行の全体像
 
 ```
-0. discovery      アイデア -> 課題と機能候補    (作るものが未確定なら)
-1. requirements   要件定義 + データフロー図
-2. screens        画面設計 (表示項目を定義)
-3. data-model     ER図 + テーブル定義 + DDL
-4. api-design     API 設計 + 3方向の突き合わせ
-5. infra-diagram  インフラ構成図 (D2)           (任意)
-6. docs-index     全成果物を1枚にまとめる
-7. validate       整合性の最終検証
+0. discovery      アイデア -> 課題と機能候補     (作るものが未確定なら)
+1. features       機能候補 -> 実装単位への分割   (機能が複数なら)
+--- ここから機能ごとに繰り返す ---
+2. requirements   要件定義 + データフロー図
+3. screens        画面設計 (表示項目を定義)
+4. data-model     ER図 + テーブル定義 + DDL
+5. api-design     API 設計 + 3方向の突き合わせ
+--- ここまで ---
+6. infra-diagram  インフラ構成図 (D2)            (任意)
+7. docs-index     全成果物を1枚にまとめる
+8. validate       整合性の最終検証
+9. tasks          実装タスクへの分解             (実装に進むなら)
 ```
 
-**順序に意味がある。** 特に 2 -> 3 -> 4 は入れ替えられない。
+**順序に意味がある。** 特に 3 -> 4 -> 5 は入れ替えられない。
 画面の表示項目が API の基準になり、テーブルのカラムがレスポンスの出所になるため。
+
+**2〜5 は機能ごとに繰り返す。** features で3機能に分割したら、3周する。
+依存の無い機能は並列で進められる (後で validate で整合を確認する)。
+
+### 各フェーズが答える問い
+
+| フェーズ | 問い |
+| --- | --- |
+| discovery | 何を作るべきか。誰のどんな課題か |
+| features | どう分けるか。何から作るか |
+| requirements | 何を満たせばよいか |
+| screens | 何を表示するか |
+| data-model | 何を保存するか |
+| api-design | 何をやり取りするか |
+| tasks | どう作るか。どの順で |
 
 ## 開始時にすること
 
@@ -69,12 +88,22 @@ ls docs/mitorizu/features/*/ 2>/dev/null
 
 | 存在するもの | 次にやること |
 | --- | --- |
-| 何もない | Phase 0 か 1 から |
-| `discovery/` のみ | Phase 1 (requirements) |
-| `requirements.md` | Phase 2 (screens) |
-| `screens.md` | Phase 3 (data-model) |
-| `data-model.md` | Phase 4 (api-design) |
-| `api.md` + `traceability.md` | Phase 5 か 6 |
+| 何もない | discovery か requirements から |
+| `discovery/` のみ | features (機能が複数なら) |
+| `features.md` | requirements (最初の機能から) |
+| `features/<slug>/requirements.md` | screens |
+| `screens.md` | data-model |
+| `data-model.md` | api-design |
+| `api.md` + `traceability.md` | 次の機能へ、または docs-index |
+| 全機能の設計が完了 | validate -> tasks |
+
+**機能が複数ある場合、どの機能がどこまで進んでいるかを機能ごとに判定する。**
+
+```bash
+for d in docs/mitorizu/features/*/; do
+  echo "$(basename $d): $(ls $d 2>/dev/null | tr '\n' ' ')"
+done
+```
 
 **途中から再開する場合、既存の成果物を読んでから進める。**
 やり直させない。

@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-5A67D8)](https://code.claude.com/docs/en/plugins)
 [![CI](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml/badge.svg)](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml)
-[![Skills](https://img.shields.io/badge/skills-8-blue)](#8つのスキル)
+[![Skills](https://img.shields.io/badge/skills-11-blue)](#11のスキル)
 
 空リポジトリから MVP を作るまでの設計を、対話しながら進めます。<br>
 要件定義書・画面設計・ER図・テーブル定義・API設計・インフラ構成図を生成し、<br>
@@ -21,6 +21,8 @@
 
 ```
 /mitorizu:init           →  実行環境を準備する (任意)
+/mitorizu:discovery      →  Web調査で課題と機能候補を洗い出す
+/mitorizu:features       →  機能を実装単位に分割する
 /mitorizu:requirements   →  何を作るのかを対話で固める
 /mitorizu:screens        →  画面に何を表示するかを決める
 /mitorizu:data-model     →  テーブルとカラムを設計する
@@ -28,6 +30,7 @@
 /mitorizu:infra-diagram  →  インフラ構成図を描く
 /mitorizu:docs-index     →  全部を1枚のドキュメントに束ねる
 /mitorizu:validate       →  整合性を再検証する
+/mitorizu:tasks          →  実装タスクに分解する
 ```
 
 ## 目次
@@ -36,7 +39,7 @@
 - [何が違うか](#何が違うか)
 - [インストール](#インストール)
 - [使い方](#使い方)
-- [8つのスキル](#8つのスキル)
+- [11のスキル](#11のスキル)
 - [生成される成果物](#生成される成果物)
 - [設計上の選択](#設計上の選択)
 - [よくある質問](#よくある質問)
@@ -311,11 +314,13 @@ flowchart TD
 
 ---
 
-## 8つのスキル
+## 11のスキル
 
 | スキル | 役割 | 主な成果物 |
 | --- | --- | --- |
 | **init** | 実行環境を準備する (d2 の導入) | `.mitorizu/bin/d2` |
+| **discovery** | Web調査で課題と機能を洗い出す | `discovery/` 一式 |
+| **features** | 機能を実装単位に分割する | `features.md` |
 | **requirements** | 対話のラリーで要件を固める | `requirements.md` (EARS記法)<br>`interview.md`<br>`dataflow.md` |
 | **screens** | 画面の表示項目・操作・遷移を定義 | `screens.md` |
 | **data-model** | ER図とテーブル定義を作る | `data-model.md` (用途・参照元つき)<br>`entities.md` |
@@ -323,6 +328,7 @@ flowchart TD
 | **infra-diagram** | D2 でインフラ構成図を描く | `production.d2`<br>`production.svg` |
 | **docs-index** | 全成果物を1枚に束ねる | `docs/mitorizu/README.md` |
 | **validate** | 整合性を横断的に検証する | (報告のみ・生成しない) |
+| **tasks** | 設計を実装タスクに分解する | `tasks.md` |
 
 すべて `disable-model-invocation: true` を設定しており、**あなたが明示的に呼び出したときだけ起動します**。Claude が勝手に要件定義を始めることはありません。
 
