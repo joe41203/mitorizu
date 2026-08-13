@@ -9,8 +9,8 @@
 [![CI](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml/badge.svg)](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml)
 [![Skills](https://img.shields.io/badge/skills-16-blue)](#16のスキル)
 
-空リポジトリから MVP を作るまでの設計を、対話しながら進めます。<br>
-要件定義書・画面設計・ER図・テーブル定義・API設計・インフラ構成図を生成し、<br>
+ざっくりしたアイデアから MVP の設計一式までを、**ビジネス側からエンジニア側へ**順に固めます。<br>
+業務フロー・要件定義・画面設計・ER図・API設計・シーケンス・インフラ構成図を生成し、<br>
 最後に **それらの整合性を機械的に検証** します。
 
 </div>
@@ -20,23 +20,31 @@
 見取図 (みとりず) は、細部の施工図ではなく **全体を大づかみに把握するための図** です。
 
 ```
-/mitorizu:init           →  実行環境を準備する (任意)
-/mitorizu:discovery      →  Web調査で課題と機能候補を洗い出す
-/mitorizu:features       →  機能を実装単位に分割する
-/mitorizu:business-flow  →  関係者・現状・将来の業務を業務の言葉で描く
-/mitorizu:requirements   →  何を作るのかを対話で固める
-/mitorizu:non-functional →  性能・可用性・セキュリティを決める
-/mitorizu:state-machine  →  状態遷移を設計する (必要な場合)
-/mitorizu:screens        →  画面に何を表示するかを決める
-/mitorizu:data-model     →  テーブルとカラムを設計する
-/mitorizu:api-design     →  API を設計し、整合性を検証する
-/mitorizu:sequence       →  処理順序と失敗時の扱いを決める
-/mitorizu:infra-diagram  →  インフラ構成図を描く
-/mitorizu:docs-index     →  全部を1枚のドキュメントに束ねる
-/mitorizu:validate       →  整合性を再検証する
-/mitorizu:tasks          →  実装タスクに分解する
-/mitorizu:adr            →  後から変えられない決定を記録する
+--- ビジネス側 (業務担当者と合意する) ---
+/mitorizu:discovery      Web調査で課題と機能候補を洗い出す
+/mitorizu:features       機能を実装単位に分割する
+/mitorizu:business-flow  関係者・現状(As-Is)・将来(To-Be)・業務ルールを描く
+
+--- 橋渡し (両方の読み手がいる) ---
+/mitorizu:requirements   業務を厳密な要件に落とす (EARS記法)
+/mitorizu:non-functional 性能・可用性・セキュリティを決める
+/mitorizu:screens        画面と表示項目を決める
+
+--- エンジニア側 ---
+/mitorizu:state-machine  状態遷移を設計する
+/mitorizu:data-model     ER図・テーブル定義・DDL
+/mitorizu:api-design     API設計と3方向の突き合わせ
+/mitorizu:sequence       処理順序・トランザクション・失敗時の扱い
+/mitorizu:infra-diagram  インフラ構成図 (D2)
+
+--- 仕上げ ---
+/mitorizu:adr            後から変えられない決定を記録する
+/mitorizu:docs-index     全成果物を1枚にまとめる
+/mitorizu:validate       整合性を検証する
+/mitorizu:tasks          実装タスクに分解する
 ```
+
+または `@mitorizu-architect` と呼べば、**全フェーズを通しで進めます**。
 
 ## 目次
 
@@ -48,26 +56,37 @@
 - [生成される成果物](#生成される成果物)
 - [設計上の選択](#設計上の選択)
 - [よくある質問](#よくある質問)
-
----
+- [既存ツールとの違い](#既存ツールとの違い)
 
 ## 3分で分かる mitorizu
 
-設計ドキュメントが散らばって整合性が取れなくなる問題を、**成果物の間に検証可能な関係を持たせる** ことで解決します。
+**ビジネス側からエンジニア側へ、順に固めていきます。**
+各フェーズは前のフェーズの答えを入力にし、飛ばすと後で必ず手戻ります。
 
 ```mermaid
-flowchart LR
-    REQ["要件定義<br/>EARS記法"] --> SCR["画面設計<br/>表示項目"]
-    SCR --> DM["データモデル<br/>カラムの用途"]
-    DM --> API["API設計<br/>レスポンス"]
+flowchart TD
+    subgraph B["ビジネス側 (技術用語を使わない)"]
+        BF["業務フロー<br/>関係者・As-Is/To-Be・業務ルール BR-NNN"]
+    end
+    subgraph M["橋渡し (両方の読み手)"]
+        REQ["要件定義<br/>EARS記法・BR-NNN を参照"]
+        SCR["画面設計<br/>表示項目"]
+    end
+    subgraph E["エンジニア側"]
+        DM["データモデル<br/>カラムの用途・参照元"]
+        API["API設計<br/>レスポンスの用途"]
+    end
+    BF --> REQ --> SCR --> DM --> API
     API --> TR{"3方向の<br/>突き合わせ"}
     SCR -.->|"照合"| TR
     DM -.->|"照合"| TR
-    TR -->|"不足・過剰<br/>0件で完了"| DOC["設計ドキュメント"]
-    INF["インフラ構成図<br/>D2"] --> DOC
+    BF -.->|"BR-NNN の追跡"| TR
+    TR -->|"0件で完了"| DOC["設計ドキュメント"]
 ```
 
-順序に意味があります。**画面 → データモデル → API** と進めることで、次の不変条件が成り立ちます。
+### 2つの不変条件
+
+**1. 表示項目・レスポンス・カラムが一致する**
 
 ```
 画面の表示項目  =  API レスポンス  ⊆  テーブルのカラム + 導出値
@@ -76,9 +95,15 @@ flowchart LR
 - 左の **等号** は、不足も過剰も許さないという意味
 - 右の **包含** は、レスポンスが必ずデータモデルに裏付けられるという意味
 
-この関係を `traceability.md` として出力し、**0件でなければ設計は完了としません**。
+**2. 業務ルールが全て実装に到達する**
 
----
+```
+business-flow の BR-NNN  ⊆  requirements / screens / data-model / api で参照される
+```
+
+どこからも参照されない `BR-NNN` は、**実装されない業務ルール**です。
+
+この2つを `traceability.md` として出力し、**0件でなければ設計は完了としません**。
 
 ## 何が違うか
 
@@ -161,7 +186,52 @@ mitorizu が埋めるのは、**要件定義とスキーマ / API 設計の接�
 
 認めないのは「将来使うかもしれない」「あると便利」「他の API が返しているから」です。
 
-### 3. 一気に決めず、ラリーで固める
+### 3. 業務担当者が読める資料を作る
+
+**要件定義は本来、発注者と合意するためのもの。**
+業務担当者が読めない要件定義書は、合意の役に立ちません。
+
+`business-flow.md` は**技術用語を一切使いません**。
+
+| 使わない | 代わりに書く |
+| --- | --- |
+| テーブル / カラム / レコード | 情報 / 項目 / 1件 |
+| API / トランザクション / 非同期 | (書かない。「システムが〜する」で表現) |
+| 認証 / セッション | ログイン、権限 |
+
+判断基準は「業務担当者に口頭で説明するとき、この言葉を使うか」です。
+
+用語集は**業務語と技術語の対応表**になります。
+
+| 業務での呼び方 | 実装での名前 | テーブル/カラム | 使ってはいけない別名 |
+| --- | --- | --- | --- |
+| 管理者 | `Admin` | `users.role = 'admin'` | 運営者、アドミン |
+| 会社 | `Company` | `companies` | 企業、法人、テナント |
+
+**業務語を先に決め、実装名をそれに合わせます。** 逆にしません。
+
+### 4. 業務ルールを採番して追跡する
+
+判定基準・計算式・上限を `BR-NNN` で採番し、業務フローとは別に一覧化します。
+
+```markdown
+| ID | 業務ルール | 適用される場面 | マーカー |
+| BR-001 | 返却期限は貸出日の14日後 | 貸出時 | [要確認] |
+| BR-002 | 1人が同時に借りられるのは5冊まで | 貸出時 | [要確認] |
+```
+
+要件から `(BR-001)` の形で参照させ、**どこからも参照されないルールを検出**します。
+
+```
+BR-002 (同時5冊まで)
+  -> requirements で REQ-012 として要件化されているか
+  -> screens で上限到達時の表示が定義されているか
+  -> api-design でエラーコードが定義されているか
+```
+
+同じルールが画面ごとに違う実装になる事故を防げます。
+
+### 5. 一気に決めず、ラリーで固める
 
 3〜5問のまとまりで質問し、各ラウンドで **現在地** と **AIの解釈** を提示します。
 
@@ -185,7 +255,7 @@ Q1. 注文のキャンセルは誰ができますか?
 
 1問ずつでは全体像を見失い、一括ドラフトでは AI の独走を許します。この粒度が両方の失敗を防ぎます。
 
-### 4. AI の推測を可視化する
+### 6. AI の推測を可視化する
 
 全項目に信頼性マーカーを付けます。
 
@@ -205,7 +275,7 @@ Q1. 注文のキャンセルは誰ができますか?
 
 `[要確認]` は各フェーズ末と README に集約されるので、**確認すべき箇所だけを追えます**。
 
-### 5. MVP のスコープを削る判断を支援する
+### 7. MVP のスコープを削る判断を支援する
 
 機能を足す提案は誰でもできますが、削る判断は明示的に行わないと際限なく膨らみます。
 
@@ -295,17 +365,29 @@ Q1. 注文のキャンセルは誰ができますか?
 
 ```mermaid
 flowchart TD
-    A["/mitorizu:requirements"] --> B["/mitorizu:screens"]
-    B --> C["/mitorizu:data-model"]
-    C --> D["/mitorizu:api-design"]
-    D --> E["/mitorizu:docs-index"]
-    F["/mitorizu:infra-diagram"] --> E
+    F["features"] --> BF["business-flow"]
+    BF --> R["requirements"]
+    R --> NF["non-functional"]
+    R --> S["screens"]
+    S --> DM["data-model"]
+    DM --> API["api-design"]
+    API --> SEQ["sequence"]
 
-    B -.->|"表示項目が<br/>API の基準になる"| D
-    C -.->|"カラムが<br/>レスポンスの出所になる"| D
+    BF -.->|"BR-NNN を参照させる"| R
+    S -.->|"表示項目が API の基準"| API
+    DM -.->|"カラムがレスポンスの出所"| API
 ```
 
-画面設計を先に行うことで、API 設計時に「画面に必要なデータが返るか」「使わないデータを返していないか」を機械的に判定できます。逆順だと、この検証ができません。
+**特に入れ替えられない順序:**
+
+| 順序 | 理由 |
+| --- | --- |
+| business-flow → requirements | 業務の合意が要件の根拠になる |
+| **screens → data-model → api-design** | **表示項目が API の基準、カラムが出所** |
+| api-design → sequence | エンドポイントが決まらないと処理順序を描けない |
+
+逆順にすると、技術で決めた後に業務担当者へ説明することになり、
+**合意ではなく報告**になります。
 
 ### 2つ目以降の機能を追加するとき
 
@@ -321,51 +403,86 @@ flowchart TD
 
 ## 16のスキル
 
-| スキル | 役割 | 主な成果物 |
-| --- | --- | --- |
-| **init** | 実行環境を準備する (d2 の導入) | `.mitorizu/bin/d2` |
-| **discovery** | Web調査で課題と機能を洗い出す | `discovery/` 一式 |
-| **features** | 機能を実装単位に分割する | `features.md` |
-| **business-flow** | 関係者・As-Is/To-Be・業務ルールを描く | `business-flow.md` |
-| **requirements** | 対話のラリーで要件を固める | `requirements.md` (EARS記法)<br>`interview.md`<br>`dataflow.md` |
-| **screens** | 画面の表示項目・操作・遷移を定義 | `screens.md` |
-| **data-model** | ER図とテーブル定義を作る | `data-model.md` (用途・参照元つき)<br>`entities.md` |
-| **api-design** | API を設計し整合性を検証 | `api.md`<br>`traceability.md` |
-| **infra-diagram** | D2 でインフラ構成図を描く | `production.d2`<br>`production.svg` |
-| **docs-index** | 全成果物を1枚に束ねる | `docs/mitorizu/README.md` |
-| **validate** | 整合性を横断的に検証する | (報告のみ・生成しない) |
-| **tasks** | 設計を実装タスクに分解する | `tasks.md` |
-| **non-functional** | 性能・可用性・セキュリティを決める | `non-functional.md` |
-| **state-machine** | 状態遷移を設計する | `state-machine.md` |
-| **adr** | 変えられない決定を記録する | `adr/ADR-NNN-*.md` |
-| **sequence** | 処理順序と失敗時の扱いを決める | `sequence.md` |
+| 層 | スキル | 役割 | 主な成果物 |
+| --- | --- | --- | --- |
+| 準備 | **init** | 実行環境を準備する (d2 の導入) | `.mitorizu/bin/d2` |
+| ビジネス | **discovery** | Web調査で課題と機能を洗い出す | `discovery/` 一式 |
+| ビジネス | **features** | 機能を実装単位に分割する | `features.md` |
+| ビジネス | **business-flow** | 関係者・As-Is/To-Be・業務ルール | `business-flow.md` |
+| 橋渡し | **requirements** | 業務を厳密な要件に落とす | `requirements.md` |
+| 橋渡し | **non-functional** | 性能・可用性・セキュリティ | `non-functional.md` |
+| 橋渡し | **screens** | 画面と表示項目 | `screens.md` |
+| 技術 | **state-machine** | 状態遷移 | `state-machine.md` |
+| 技術 | **data-model** | ER図・テーブル定義・DDL | `data-model.md` |
+| 技術 | **api-design** | API設計と整合性検証 | `api.md` `traceability.md` |
+| 技術 | **sequence** | 処理順序・失敗時の扱い | `sequence.md` |
+| 技術 | **infra-diagram** | インフラ構成図 (D2) | `production.d2` `.svg` |
+| 仕上げ | **adr** | 変えられない決定を記録 | `adr/ADR-NNN-*.md` |
+| 仕上げ | **docs-index** | 全成果物を1枚に束ねる | `docs/mitorizu/README.md` |
+| 仕上げ | **validate** | 整合性を横断的に検証 | (報告のみ・生成しない) |
+| 仕上げ | **tasks** | 実装タスクに分解 | `tasks.md` |
 
-すべて `disable-model-invocation: true` を設定しており、**あなたが明示的に呼び出したときだけ起動します**。Claude が勝手に要件定義を始めることはありません。
+すべて `disable-model-invocation: true` を設定しており、
+**あなたが明示的に呼び出したときだけ起動します**。
+Claude が勝手に要件定義を始めることはありません。
 
----
+### 2つのエージェント
+
+| エージェント | 役割 |
+| --- | --- |
+| **@mitorizu-architect** | 全フェーズを通しで進める。現在地を判定し、次のフェーズを実行する |
+| **@mitorizu-researcher** | 調査1軸を担当する。discovery から並列で呼ばれる |
+
+architect は**並列化と失敗ハンドリング**を持ちます。
+discovery の4軸調査を同時に投げ、子が失敗したら2回まで再実行し、
+3回目は方針を変えます。
+
+### プロジェクトごとに学習する
+
+利用者の訂正や検証で見つかった失敗を `docs/mitorizu/.feedback/` に蓄積し、
+**次回以降の既定を変えます**。プラグイン本体は書き換えません。
+
+| ファイル | 内容 |
+| --- | --- |
+| `overrides.md` | 既定を上書きするルール (利用者の訂正から) |
+| `learnings.md` | 繰り返し起きた失敗と対策 (validate の検出から) |
+
+**3回ルール**: 同じことが3回起きたら記録します。
+1回で記録するとその場限りの指示が既定になり、
+何回起きても記録しないと同じ訂正を毎回受けることになります。
 
 ## 生成される成果物
 
 ```
 docs/mitorizu/
 ├── README.md                   ← 全成果物の目次と要約 (これ1枚で全体が分かる)
-├── glossary.md                 用語集 (ユビキタス言語)
+├── features.md                 機能の分割・優先順位・スコープ境界
+├── non-functional.md           非機能要件 (プロジェクト全体で1つ)
+├── glossary.md                 用語集 (業務語と技術語の対応表)
 ├── entities.md                 エンティティカタログ
 ├── decisions.md                確定事項のスナップショット
+├── .feedback/                  プロジェクト固有の学習内容
+│   ├── overrides.md            既定を上書きするルール
+│   └── learnings.md            繰り返し起きた失敗と対策
 ├── adr/                        アーキテクチャ決定記録
+├── discovery/                  Web調査の結果
 ├── features/
 │   └── <機能名>/
-│       ├── requirements.md     要件定義書 (EARS 記法 + 信頼性マーカー)
+│       ├── business-flow.md    業務フロー (非エンジニア向け・BR-NNN)
+│       ├── requirements.md     要件定義書 (EARS + 信頼性マーカー)
 │       ├── interview.md        ヒアリング記録
 │       ├── screens.md          画面設計 (表示項目・操作・遷移)
-│       ├── dataflow.md         データフロー図 (mermaid)
+│       ├── state-machine.md    状態遷移
 │       ├── data-model.md       ER図 + テーブル定義 + DDL
-│       ├── api.md              API 設計 (パス・レスポンス・用途)
-│       └── traceability.md     画面 → API → テーブル の追跡表
+│       ├── api.md              API設計 (パス・レスポンス・用途)
+│       ├── sequence.md         処理順序・トランザクション・失敗時の扱い
+│       ├── traceability.md     画面 → API → テーブル の追跡表
+│       └── tasks.md            実装タスク
 └── infra/
     ├── production.d2           インフラ構成図のソース
     └── production.svg          生成された図
 ```
+
 
 ### 生成物のサンプル
 
@@ -520,6 +637,9 @@ GitHub は D2 をネイティブレンダリングしないためです。
 | 通常の図 | mermaid | GitHub でそのまま描画される |
 | インフラ図 | D2 | クラウドのアイコンと VPC の入れ子が必要 |
 | 配布形態 | Plugin marketplace | インストーラ不要、名前空間が衝突しない |
+| フェーズ順序 | ビジネス → エンジニア | 技術で決めてから説明すると「合意」でなく「報告」になる |
+| 業務資料 | 技術用語を使わない | 業務担当者が読めない要件定義書は合意の役に立たない |
+| 業務ルール | `BR-NNN` で採番 | ISO/IEC/IEEE 29148 が「一意に採番し参照する」と規定 |
 
 ### なぜインフラ図だけ D2 か
 
@@ -590,6 +710,57 @@ YAML は階層が深く、フィールドの用途が `description` に埋もれ
 </details>
 
 <details>
+<summary><b>業務担当者に見せる資料は作れますか?</b></summary>
+
+`business-flow.md` がそれです。**技術用語を一切使いません。**
+
+関係者の洗い出し、現状(As-Is)と将来(To-Be)の対比、
+誰が何をするとどうなるかの表、業務ルールを、業務の言葉だけで書きます。
+
+「増える手間」も隠さず書きます。システム化で楽になる部分だけを見せると、
+導入時に反発を招くためです。
+
+</details>
+
+<details>
+<summary><b>フェーズが16個は多くないですか?</b></summary>
+
+多くありません。**各フェーズが答える問いが違う**ためです。
+
+| フェーズ | 問い |
+| --- | --- |
+| business-flow | 誰が関わり、今どうしていて、将来どうなるか |
+| requirements | システムは何を満たせばよいか |
+| screens | 何を表示するか |
+| data-model | 何を保存するか |
+| api-design | 何をやり取りするか |
+| sequence | どういう順序で、失敗したらどうするか |
+
+統合すると1つのスキルが2つの判断を持つことになります。
+
+**すべてを実行する必要はありません。** 状態が単純なら state-machine は不要、
+インフラ図が要らなければ infra-diagram は飛ばせます。
+`@mitorizu-architect` が必要なものだけを選んで進めます。
+
+</details>
+
+<details>
+<summary><b>使うほど賢くなりますか?</b></summary>
+
+**プロジェクトごとに学習します。**
+
+「テーブル名は単数形で」のような訂正を受けたら、確認の上で
+`docs/mitorizu/.feedback/overrides.md` に記録し、次回から適用します。
+
+`/mitorizu:validate` が同じ指摘を3回出したら、原因と対策を
+`learnings.md` に記録し、次回は最初から回避します。
+
+記録先は**プロジェクト内**です。プラグイン本体は書き換えないため、
+`/plugin update` で消えることはありません。
+
+</details>
+
+<details>
 <summary><b>Claude が勝手に要件定義を始めませんか?</b></summary>
 
 始めません。全スキルに `disable-model-invocation: true` を設定しているため、`/mitorizu:requirements` のように **明示的に呼び出したときだけ** 起動します。
@@ -610,12 +781,16 @@ YAML は階層が深く、フィールドの用途が `description` に埋もれ
 | --- | :-: | :-: | :-: | :-: | :-: |
 | 要件定義 | あり | あり | あり | あり | あり |
 | EARS 記法 | あり | - | - | あり | あり |
+| **業務フロー (非エンジニア向け)** | **あり** | - | - | - | - |
+| **業務ルールの採番と追跡** | **あり** | - | - | - | - |
 | 画面の表示項目定義 | **あり** | - | - | あり | - |
 | ER図・テーブル定義 | **あり** | 枠のみ | - | - | - |
 | **カラムの用途・参照元** | **あり** | - | - | - | - |
 | API 設計 | **あり** | 枠のみ | - | - | - |
 | **レスポンスの過不足検証** | **あり** | - | - | - | - |
+| **シーケンス (失敗時の扱い)** | **あり** | - | - | - | - |
 | インフラ構成図 | **あり** | - | - | - | - |
+| **プロジェクトごとの学習** | **あり** | - | - | - | - |
 | AI の推測の可視化 | あり | - | - | あり | - |
 | 実装フェーズ | - | あり | あり | あり | あり |
 | 逆生成 (コード→仕様) | - | - | - | あり | - |
