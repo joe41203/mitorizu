@@ -210,6 +210,19 @@ ls -la --time-style=+%s docs/mitorizu/features/<slug>/*.md 2>/dev/null \
 
 古い場合、または存在しない場合は**その場で突き合わせをやり直す**。
 
+**やり直した結果はファイルに書かない。報告に含めるだけ。**
+このスキルは何も生成しないため。`traceability.md` の更新が必要なら、
+`/mitorizu:api-design` を再実行するよう案内する。
+
+```
+traceability.md が screens.md より古いため、その場で突き合わせ直しました。
+以下は今回の検証結果であり、ファイルには反映していません。
+
+  不足 1件 / 過剰 0件 / 出所不明 2件
+
+traceability.md を更新するには /mitorizu:api-design を再実行してください。
+```
+
 判定規則は `${CLAUDE_PLUGIN_ROOT}/skills/api-design/SKILL.md` の
 「不足と出所不明の切り分け」に従う。**1つの問題を2箇所に計上しない。**
 

@@ -280,3 +280,28 @@ sequenceDiagram
 | 1 (借りる) | REQ-001, REQ-002 |
 | 2 (返す) | REQ-003 |
 | 5 (延滞判定) | REQ-010 |
+
+---
+
+## 書き終えたら自己点検する
+
+**技術用語の grep だけでは足りない。** 節の抜けと再掲漏れは検出できない。
+
+```bash
+SLUG=<feature-slug>
+DOC=docs/mitorizu/features/$SLUG/business-flow.md
+
+# 1. 技術用語の混入
+grep -nE 'テーブル|カラム|レコード|API|エンドポイント|トランザクション|非同期|認証|認可|セッション|エンティティ|バリデーション' "$DOC"
+
+# 2. 節の抜け (このテンプレートは13節)
+grep -c '^## [0-9]' "$DOC"
+
+# 3. [要確認] の再掲漏れ (本文の件数と再掲節の項目数を突き合わせる)
+grep -c '\[要確認\]' "$DOC"
+
+# 4. mermaid の構文
+"${CLAUDE_PLUGIN_ROOT}/scripts/check-mermaid.sh" "$DOC"
+```
+
+節を省いた場合は、**なぜ不要と判断したかを書く。** 黙って省かない。
