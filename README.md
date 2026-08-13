@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-5A67D8)](https://code.claude.com/docs/en/plugins)
 [![CI](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml/badge.svg)](https://github.com/joe41203/mitorizu/actions/workflows/ci.yml)
-[![Skills](https://img.shields.io/badge/skills-7-blue)](#7つのスキル)
+[![Skills](https://img.shields.io/badge/skills-8-blue)](#8つのスキル)
 
 空リポジトリから MVP を作るまでの設計を、対話しながら進めます。<br>
 要件定義書・画面設計・ER図・テーブル定義・API設計・インフラ構成図を生成し、<br>
@@ -27,6 +27,7 @@
 /mitorizu:api-design     →  API を設計し、整合性を検証する
 /mitorizu:infra-diagram  →  インフラ構成図を描く
 /mitorizu:docs-index     →  全部を1枚のドキュメントに束ねる
+/mitorizu:validate       →  整合性を再検証する
 ```
 
 ## 目次
@@ -35,7 +36,7 @@
 - [何が違うか](#何が違うか)
 - [インストール](#インストール)
 - [使い方](#使い方)
-- [7つのスキル](#7つのスキル)
+- [8つのスキル](#8つのスキル)
 - [生成される成果物](#生成される成果物)
 - [設計上の選択](#設計上の選択)
 - [よくある質問](#よくある質問)
@@ -264,6 +265,24 @@ Q1. 注文のキャンセルは誰ができますか?
 /mitorizu:docs-index       全成果物の README を生成
 ```
 
+### 設計を直したら再検証する
+
+```
+/mitorizu:validate
+```
+
+各スキルの検証は実行時にしか走りません。**設計を手で修正した後や、
+2つ目以降の機能を作った後** は、このスキルで横断的に検証します。
+
+| 検証する範囲 | 内容 |
+| --- | --- |
+| 機能内 | 不足 / 過剰 / 出所不明 / 用途の空欄 / 要件の追跡漏れ |
+| 機能間 | 用語のブレ / エンティティ重複 / 要件の矛盾 |
+| 形式 | 信頼性マーカー / EARS 記法 / 命名規約 / 図の構文 |
+
+**このスキルは何も生成せず、修正もしません。** 報告だけを行い、
+何を直すかは利用者が判断します。
+
 ### 順序に意味があります
 
 ```mermaid
@@ -292,7 +311,7 @@ flowchart TD
 
 ---
 
-## 7つのスキル
+## 8つのスキル
 
 | スキル | 役割 | 主な成果物 |
 | --- | --- | --- |
@@ -303,6 +322,7 @@ flowchart TD
 | **api-design** | API を設計し整合性を検証 | `api.md`<br>`traceability.md` |
 | **infra-diagram** | D2 でインフラ構成図を描く | `production.d2`<br>`production.svg` |
 | **docs-index** | 全成果物を1枚に束ねる | `docs/mitorizu/README.md` |
+| **validate** | 整合性を横断的に検証する | (報告のみ・生成しない) |
 
 すべて `disable-model-invocation: true` を設定しており、**あなたが明示的に呼び出したときだけ起動します**。Claude が勝手に要件定義を始めることはありません。
 
@@ -563,14 +583,69 @@ YAML は階層が深く、フィールドの用途が `description` に埋もれ
 
 ---
 
-## 参考にしたもの
+## 既存ツールとの違い
 
-| プロジェクト | 参考にした点 |
+仕様駆動開発 (SDD) のツールは既に成熟しています。mitorizu を作る前に主要なものを調査し、
+**どこが埋まっていないか** を確認しました。
+
+### 機能の比較
+
+| | mitorizu | [spec-kit](https://github.com/github/spec-kit) | [OpenSpec](https://github.com/Fission-AI/OpenSpec) | [tsumiki](https://github.com/classmethod/tsumiki) | [Kiro](https://kiro.dev/docs/specs/) |
+| --- | :-: | :-: | :-: | :-: | :-: |
+| 要件定義 | あり | あり | あり | あり | あり |
+| EARS 記法 | あり | - | - | あり | あり |
+| 画面の表示項目定義 | **あり** | - | - | あり | - |
+| ER図・テーブル定義 | **あり** | 枠のみ | - | - | - |
+| **カラムの用途・参照元** | **あり** | - | - | - | - |
+| API 設計 | **あり** | 枠のみ | - | - | - |
+| **レスポンスの過不足検証** | **あり** | - | - | - | - |
+| インフラ構成図 | **あり** | - | - | - | - |
+| AI の推測の可視化 | あり | - | - | あり | - |
+| 実装フェーズ | - | あり | あり | あり | あり |
+| 逆生成 (コード→仕様) | - | - | - | あり | - |
+| 対応 AI ツール | Claude Code | 30+ | 多数 | Claude Code | 専用 IDE |
+
+「枠のみ」は、テンプレートに `data-model.md` や `contracts/` という**項目は定義されているが、
+中身の書式が規定されていない**という意味です
+([spec-kit の plan-template.md](https://github.com/github/spec-kit/blob/main/templates/plan-template.md) を実際に読んで確認)。
+
+### 埋めたのはどこか
+
+調査の結論は、**「要件の構造化」と「スキーマ/API 成果物の生成」は別々の道具として存在し、
+その接続部が空いている** ということでした。
+
+```
+要件定義          ←→          [ 空白 ]          ←→        スキーマ/API
+spec-kit                                                   ER図ツール
+OpenSpec                    ← mitorizu →                  OpenAPI生成器
+tsumiki                                                    Prisma/Rails
+Kiro
+```
+
+- 要件側のツールは、要件を構造化するところまでで止まる
+- スキーマ側のツールは、**既にあるスキーマ**を可視化・変換するもので、要件からは始まらない
+- 両者を繋ぐ「この要件だから、このカラムが要る」という導出が手作業で残る
+
+mitorizu はここだけを担当します。そのため**実装フェーズを持ちません**。
+実装は spec-kit や tsumiki、あるいは通常の Claude Code に任せる想定です。
+
+### 各ツールから採ったもの
+
+| プロジェクト | 採用した設計 |
 | --- | --- |
-| [classmethod/tsumiki](https://github.com/classmethod/tsumiki) | 信頼性マーカー、サブエージェント委譲によるコンテキスト節約、npx から Plugin への移行 |
-| [AWS Kiro](https://kiro.dev/docs/specs/) | EARS 記法 |
-| [claude-code-requirements-builder](https://github.com/rizethereum/claude-code-requirements-builder) | 段階的な質問による要件抽出 |
+| [tsumiki](https://github.com/classmethod/tsumiki) | **信頼性マーカー** (AI の推測を可視化する)、サブエージェント委譲によるコンテキスト節約、npx から Plugin marketplace への移行 |
+| [AWS Kiro](https://kiro.dev/docs/specs/) | **EARS 記法** (要件をそのまま受入基準に変換できる形にする) |
+| [claude-code-requirements-builder](https://github.com/rizethereum/claude-code-requirements-builder) | 段階的な質問による要件抽出 (回答負荷を下げつつ曖昧性を潰す) |
 | [github/spec-kit](https://github.com/github/spec-kit) | 原則を先に固定してから仕様を書く構成 |
+
+### 採らなかったもの
+
+| 設計 | 採らなかった理由 |
+| --- | --- |
+| 1000行超の単一プロンプト (tsumiki の `kairo-requirements.md` は1061行) | 保守が困難。SKILL.md は 500行以内に抑え、詳細は `references/` に分割した |
+| OpenAPI YAML を主成果物にする | 階層が深く、フィールドの用途が `description` に埋もれて一覧できない |
+| npx インストーラ | tsumiki 自身が Plugin marketplace へ移行済み。インストーラの実装・保守が不要になる |
+| 絵文字によるマーカー | 本プロジェクトでは絵文字を使わない方針のため、`[確実]` `[推測]` `[要確認]` のテキストにした |
 
 ---
 
