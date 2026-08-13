@@ -27,6 +27,19 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 最終フェーズで README の該当節を自動更新する。
 このスキルは**全体を作り直す / 初回に作る**ときに使う。
 
+## 開始前に必ず読むもの
+
+**成果物を書き始める前に、このプロジェクトの学習内容を読む。**
+既定より優先度が高い。
+
+```bash
+cat docs/mitorizu/.feedback/overrides.md 2>/dev/null
+cat docs/mitorizu/.feedback/learnings.md 2>/dev/null
+```
+
+無ければ既定で進める。あれば**そちらを優先する**。
+詳細は共通規約の「フィードバックの蓄積と反映」を参照。
+
 ## 成果物
 
 ```

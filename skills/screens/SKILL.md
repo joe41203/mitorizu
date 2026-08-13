@@ -15,6 +15,19 @@ allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Task, Bash
 
 **共通規約 `${CLAUDE_PLUGIN_ROOT}/references/conventions.md` を必ず先に読むこと。**
 
+## 開始前に必ず読むもの
+
+**成果物を書き始める前に、このプロジェクトの学習内容を読む。**
+既定より優先度が高い。
+
+```bash
+cat docs/mitorizu/.feedback/overrides.md 2>/dev/null
+cat docs/mitorizu/.feedback/learnings.md 2>/dev/null
+```
+
+無ければ既定で進める。あれば**そちらを優先する**。
+詳細は共通規約の「フィードバックの蓄積と反映」を参照。
+
 ## 前提
 
 `docs/mitorizu/features/<feature-slug>/requirements.md` が存在すること。
@@ -146,6 +159,23 @@ stateDiagram-v2
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/check-mermaid.sh" docs/mitorizu/features/<slug>/screens.md
 ```
+
+### 終了前: 学んだことを記録する
+
+このフェーズで**利用者から訂正や指示**を受けたら、
+次回も同じ判断をすべきものだけを `docs/mitorizu/.feedback/overrides.md` に追記する。
+
+**記録する前に利用者に確認する。**
+
+```
+以下を次回以降の既定にしますか?
+  「テーブル名は単数形を使う」(今回のご指摘)
+
+A: 記録する (次回から自動で適用)
+B: 今回限り (記録しない)
+```
+
+その場限りの指示 (機能名、今回の値) は記録しない。
 
 ### Phase 5: 確認と次のステップ
 

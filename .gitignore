@@ -1,3 +1,9 @@
 .DS_Store
 *.log
 node_modules/
+
+# Claude Code のセッション情報 (コミットしない)
+.claude/
+
+# /mitorizu:init が配置するツール
+.mitorizu/
