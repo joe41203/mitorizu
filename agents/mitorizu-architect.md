@@ -48,26 +48,25 @@ ${CLAUDE_PLUGIN_ROOT}/references/conventions.md
 --- ビジネス側 (業務担当者・発注者と合意する) ---
 0. discovery       アイデア -> 課題と機能候補      (作るものが未確定なら)
 1. features        機能候補 -> 実装単位への分割    (機能が複数なら)
-2. stakeholders    関係者と関心事                  (プロジェクト全体で1回)
-3. business-flow   現状(As-Is)と将来(To-Be)の業務   (技術用語を使わない)
+2. business-flow   関係者・現状(As-Is)・将来(To-Be)・業務ルール (技術用語を使わない)
 
 --- 橋渡し (両方の読み手がいる) ---
-4. requirements    業務を厳密な要件に落とす (EARS)
-5. non-functional  性能・可用性・セキュリティ      (プロジェクト全体で1回)
-6. screens         画面と表示項目
+3. requirements    業務を厳密な要件に落とす (EARS)
+4. non-functional  性能・可用性・セキュリティ      (プロジェクト全体で1回)
+5. screens         画面と表示項目
 
 --- エンジニア側 ---
-7. state-machine   状態遷移 (状態が3つ以上なら)
-8. data-model      ER図 + テーブル定義 + DDL
-9. api-design      API 設計 + 3方向の突き合わせ
-10. sequence       処理順序・トランザクション・失敗時の扱い
-11. infra-diagram  インフラ構成図 (D2)             (任意)
+6. state-machine   状態遷移 (状態が3つ以上なら)
+7. data-model      ER図 + テーブル定義 + DDL
+8. api-design      API 設計 + 3方向の突き合わせ
+9. sequence       処理順序・トランザクション・失敗時の扱い
+10. infra-diagram  インフラ構成図 (D2)             (任意)
 
 --- 仕上げ ---
-12. adr            後から変えられない決定を記録
-13. docs-index     全成果物を1枚にまとめる
-14. validate       整合性の最終検証
-15. tasks          実装タスクへの分解              (実装に進むなら)
+11. adr            後から変えられない決定を記録
+12. docs-index     全成果物を1枚にまとめる
+13. validate       整合性の最終検証
+14. tasks          実装タスクへの分解              (実装に進むなら)
 ```
 
 ### なぜこの順序か
@@ -82,7 +81,6 @@ ${CLAUDE_PLUGIN_ROOT}/references/conventions.md
 
 | 順序 | 理由 |
 | --- | --- |
-| stakeholders -> business-flow | 関係者が確定しないと登場人物を書けない |
 | business-flow -> requirements | 業務の合意が要件の根拠になる |
 | requirements -> screens | 要件を満たす画面を決める |
 | **screens -> data-model -> api-design** | **表示項目が API の基準、カラムがレスポンスの出所** |
@@ -99,8 +97,7 @@ ${CLAUDE_PLUGIN_ROOT}/references/conventions.md
 | --- | --- | --- |
 | ビジネス | discovery | 何を作るべきか。誰のどんな課題か |
 | ビジネス | features | どう分けるか。何から作るか |
-| ビジネス | stakeholders | **誰が関わり、何を気にするか** |
-| ビジネス | business-flow | **今どうしていて、将来どうなるか** |
+| ビジネス | business-flow | **誰が関わり、今どうしていて、将来どうなるか** |
 | 橋渡し | requirements | システムは何を満たせばよいか |
 | 橋渡し | non-functional | どれくらいの規模・速度・安全性か |
 | 橋渡し | screens | 何を表示するか |
@@ -128,8 +125,7 @@ ls docs/mitorizu/features/*/ 2>/dev/null
 | --- | --- |
 | 何もない | discovery か features から |
 | `discovery/` のみ | features (機能が複数なら) |
-| `features.md` | stakeholders |
-| `stakeholders.md` | business-flow (最初の機能から) |
+| `features.md` | business-flow (最初の機能から) |
 | `features/<slug>/business-flow.md` | requirements |
 | `requirements.md` | non-functional (初回のみ) -> screens |
 | `screens.md` | data-model (状態が複雑なら state-machine を先に) |

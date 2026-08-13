@@ -35,6 +35,7 @@ allowed-tools: Read, Glob, Grep, Bash, Task
 | A6 | 画面の追跡 | 全ての SCR-NNN が要件に対応しているか |
 | A7 | **要件の実現可能性** | **要件が要求するデータがテーブルに存在するか** |
 | A8 | **enum の値** | **enum 相当のカラムに値の一覧があり、api.md と一致するか** |
+| A9 | **業務ルールの追跡** | **全ての BR-NNN が要件・画面・API のどこかで参照されているか** |
 
 **A7 は traceability.md では検出できない。**
 traceability は「画面 - API - テーブル」の3方向を見るが、
@@ -137,6 +138,35 @@ grep -hoE '^### [a-z_]+' docs/mitorizu/features/*/data-model.md | sed 's/^### //
 `books` は正しく `lending` は誤りだが、正規表現では区別できない。
 一覧を出して目視で確認する。不規則複数形 (`people` `children`) もあるため
 機械判定を試みると誤検出が増える。
+
+#### 業務ルールの追跡 (A9)
+
+**`business-flow.md` の `BR-NNN` が、後続の成果物で参照されているかを見る。**
+
+どこからも参照されない業務ルールは、**実装されない業務ルール**。
+これが mitorizu で最も検出価値の高いものの1つ。
+
+```bash
+# 定義されている業務ルール
+grep -ohE 'BR-[0-9]+' docs/mitorizu/features/*/business-flow.md | sort -u > /tmp/br-defined
+
+# 参照されている業務ルール (business-flow 以外から)
+grep -ohE 'BR-[0-9]+' docs/mitorizu/features/*/{requirements,screens,api,data-model}.md 2>/dev/null \
+  | sort -u > /tmp/br-used
+
+# 参照されていないもの
+comm -23 /tmp/br-defined /tmp/br-used
+```
+
+出力があれば、そのルールは設計に反映されていない。
+
+| 判定 | 対応 |
+| --- | --- |
+| 要件化を忘れた | requirements に追加する |
+| 意図的に MVP 対象外 | business-flow に「MVP 対象外」と明記する |
+| ルールが不要だった | business-flow から削除する |
+
+**「実装しない」と決めることも記録する。** 曖昧に残さない。
 
 #### enum の値の検証 (A8)
 
