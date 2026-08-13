@@ -30,6 +30,21 @@ fi
 TMPDIR_WORK=$(mktemp -d)
 trap 'rm -rf "$TMPDIR_WORK"' EXIT
 
+# mmdc は内部で Puppeteer (Chromium) を使う。
+# CI やコンテナなど unprivileged user namespaces が無効な環境では
+# サンドボックス付きで起動できないため --no-sandbox が必要になる。
+# PUPPETEER_CONFIG が指定されていればそれを使い、
+# 無ければ CI 環境 (CI 変数が真) のときだけ自動で用意する。
+MMDC_OPTS=()
+if [ -n "${PUPPETEER_CONFIG:-}" ]; then
+  MMDC_OPTS=(-p "$PUPPETEER_CONFIG")
+elif [ -n "${CI:-}" ]; then
+  cat > "$TMPDIR_WORK/puppeteer.json" <<'JSON'
+{ "args": ["--no-sandbox", "--disable-setuid-sandbox"] }
+JSON
+  MMDC_OPTS=(-p "$TMPDIR_WORK/puppeteer.json")
+fi
+
 STATUS=0
 
 for FILE in "$@"; do
@@ -51,7 +66,8 @@ for FILE in "$@"; do
         n=$((n + 1))
         found=1
         printf '%s' "$buf" > "$TMPDIR_WORK/block.mmd"
-        if ! mmdc -i "$TMPDIR_WORK/block.mmd" -o "$TMPDIR_WORK/out.svg" \
+        if ! mmdc "${MMDC_OPTS[@]+"${MMDC_OPTS[@]}"}" \
+             -i "$TMPDIR_WORK/block.mmd" -o "$TMPDIR_WORK/out.svg" \
              >/dev/null 2>"$TMPDIR_WORK/err"; then
           echo "FAIL $FILE :: block_$n" >&2
           sed 's/^/    /' "$TMPDIR_WORK/err" >&2

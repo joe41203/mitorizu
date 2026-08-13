@@ -88,40 +88,24 @@ jobs:
       - name: mermaid-cli をインストール
         run: npm install -g @mermaid-js/mermaid-cli
 
-      - name: Mermaid ブロックを検証
+      - name: Puppeteer の設定を用意
+        # CI の Ubuntu では unprivileged user namespaces が無効で
+        # Chromium がサンドボックス付きで起動できないため --no-sandbox を渡す
         run: |
-          set -uo pipefail
-          fail=0
-          tmp=$(mktemp -d)
+          cat > /tmp/puppeteer.json <<'JSON'
+          { "args": ["--no-sandbox", "--disable-setuid-sandbox"] }
+          JSON
 
-          # Markdown 内の ```mermaid ブロックを抽出して mmdc に通す
-          while IFS= read -r f; do
-            n=0
-            in_block=0
-            buf=""
-            while IFS= read -r line; do
-              if [ "$in_block" -eq 1 ]; then
-                if [ "$line" = '```' ]; then
-                  in_block=0
-                  n=$((n + 1))
-                  printf '%s' "$buf" > "$tmp/block.mmd"
-                  if ! mmdc -i "$tmp/block.mmd" -o "$tmp/out.svg" >/dev/null 2>"$tmp/err"; then
-                    echo "FAIL $f :: block_$n" >&2
-                    sed 's/^/    /' "$tmp/err" >&2
-                    fail=1
-                  fi
-                  buf=""
-                else
-                  buf="${buf}${line}"$'\n'
-                fi
-              elif [ "$line" = '```mermaid' ]; then
-                in_block=1
-              fi
-            done < "$f"
-            [ "$n" -gt 0 ] && echo "OK   $f ($n ブロック)"
-          done < <(find . -name '*.md' -not -path './.git/*')
-
-          exit $fail
+      # 同梱スクリプトをそのまま使う。
+      # CI 専用の検証ロジックを別に持つと、
+      # 利用者が実行するものと CI が検証するものが乖離するため。
+      - name: Mermaid ブロックを検証
+        env:
+          PUPPETEER_CONFIG: /tmp/puppeteer.json
+        run: |
+          chmod +x scripts/check-mermaid.sh
+          find . -name '*.md' -not -path './.git/*' -print0 \
+            | xargs -0 scripts/check-mermaid.sh
 
   validate-d2:
     name: D2 検証スクリプトの動作確認
