@@ -1,6 +1,6 @@
 ---
 name: business-flow
-description: 業務担当者や発注者が読める業務フロー図を作る。誰がどんな操作をすると何が起きるかを、技術用語を使わずに描く。要件定義の合意形成に使う。エンジニア向けの設計書とは別に、非エンジニアが理解できる形で残す。
+description: 業務担当者や発注者と合意するための資料を作る。関係者の洗い出し(使う人・影響を受ける人・決める人)、現状(As-Is)と将来(To-Be)の業務フロー、業務のやり取りの時系列、業務ルールの採番(BR-NNN)を、技術用語を使わずにまとめる。requirements の前に実行する。
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
 ---
